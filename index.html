@@ -70,7 +70,6 @@
 </div>
 
 <script>
-    // ELEMENTOS
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreElement = document.getElementById('score');
@@ -79,24 +78,40 @@
     const storyPhase = document.getElementById('story-phase');
     const finalScreen = document.getElementById('finalScreen');
 
-    // CONTROLE DE CARREGAMENTO DAS IMAGENS DOS PERSONAGENS
-    let playerImgLoaded = false;
-    let spawnerImgLoaded = false;
+    // CARREGADOR INTELIGENTE DE IMAGENS DOS PERSONAGENS
+    function createSmartImage(baseName, extensions) {
+        const img = new Image();
+        let extIndex = 0;
+        let isLoaded = false;
 
-    const playerImg = new Image();
-    playerImg.src = './VOCE.jpg'; 
-    playerImg.onload = () => { playerImgLoaded = true; };
+        function tryNext() {
+            if (extIndex < extensions.length) {
+                img.src = baseName + extensions[extIndex];
+                extIndex++;
+            }
+        }
 
-    const spawnerImg = new Image();
-    spawnerImg.src = './ELA.jpg'; 
-    spawnerImg.onload = () => { spawnerImgLoaded = true; };
+        img.onload = () => { isLoaded = true; };
+        img.onerror = () => { tryNext(); };
+
+        tryNext();
+
+        return {
+            get image() { return img; },
+            get loaded() { return isLoaded; }
+        };
+    }
+
+    // MAPEANDO OS ARQUIVOS VOCE.jpg E ELA.jpg DO SEU GITHUB
+    const playerSmart = createSmartImage('./VOCE', ['.jpg', '.JPG', '.jpeg', '.JPEG', '.png', '.PNG']);
+    const spawnerSmart = createSmartImage('./ELA', ['.jpg', '.JPG', '.jpeg', '.JPEG', '.png', '.PNG']);
 
     // ESTADO DO JOGO
     let score = 0;
     const arcadeTargetScore = 50;
     let arcadeRunning = true;
 
-    // FOTOS DO ÁLBUM FINAL
+    // FOTOS DO ÁLBUM FINAL DO SEU GITHUB
     const photos = [
         { url: "./FOTO1.JPEG", caption: "O começo de tudo!" },
         { url: "./FOTO2.JPEG", caption: "Aquele sorriso" },
@@ -106,7 +121,7 @@
         { url: "./FOTO6.JPEG", caption: "O show da nossa história" }
     ];
 
-    // FASES DA HISTÓRIA
+    // CENAS DA HISTÓRIA
     const scenes = [
         {
             title: "Capítulo 1: Oi, Como foi seu Dia?",
@@ -138,7 +153,6 @@
 
     let currentScene = 0;
 
-    // PERSONAGENS
     const player = { x: canvas.width / 2 - 30, y: canvas.height - 70, size: 60, speed: 6, dx: 0 };
     const spawner = { x: canvas.width / 2 - 25, y: 10, size: 50, speed: 2.5, direction: 1 };
 
@@ -186,18 +200,16 @@
         }
     }
 
-    // FUNÇÃO ROBUSTA PARA DESENHAR O AVATAR (Foto ou Círculo Colorido)
-    function drawAvatar(img, isLoaded, x, y, size, borderColor, fallbackText) {
+    function drawAvatar(smartObj, x, y, size, borderColor, fallbackText) {
         ctx.save();
         ctx.beginPath();
         ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
 
-        if (isLoaded) {
-            ctx.drawImage(img, x, y, size, size);
+        if (smartObj.loaded) {
+            ctx.drawImage(smartObj.image, x, y, size, size);
         } else {
-            // Se a imagem não carregar, cria um avatar colorido com nome
             ctx.fillStyle = borderColor;
             ctx.fillRect(x, y, size, size);
             ctx.fillStyle = '#ffffff';
@@ -207,7 +219,6 @@
         }
         ctx.restore();
 
-        // Borda decorativa
         ctx.beginPath();
         ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
         ctx.lineWidth = 3;
@@ -218,13 +229,13 @@
     function drawArcade() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 1. Ela no topo
-        drawAvatar(spawnerImg, spawnerImgLoaded, spawner.x, spawner.y, spawner.size, '#e91e63', 'ELA');
+        // Ela no topo (Lançadora)
+        drawAvatar(spawnerSmart, spawner.x, spawner.y, spawner.size, '#e91e63', 'ELA');
 
-        // 2. Você embaixo
-        drawAvatar(playerImg, playerImgLoaded, player.x, player.y, player.size, '#ff4081', 'VOCÊ');
+        // Você embaixo (Cesta)
+        drawAvatar(playerSmart, player.x, player.y, player.size, '#ff4081', 'VOCÊ');
 
-        // 3. Corações
+        // Corações
         hearts.forEach(h => {
             ctx.fillStyle = '#e91e63';
             ctx.font = `${h.size}px sans-serif`;
@@ -260,7 +271,6 @@
     btnRight.addEventListener('mousedown', () => player.dx = player.speed);
     btnRight.addEventListener('mouseup', () => player.dx = 0);
 
-    // TRANSITION: FASE 2
     function startStoryPhase() {
         arcadeRunning = false;
         clearInterval(heartInterval);
@@ -296,7 +306,6 @@
         }
     }
 
-    // TRANSITION: FASE 3
     function showFinalScreen() {
         storyPhase.style.display = 'none';
         finalScreen.style.display = 'block';
@@ -330,7 +339,7 @@
         arcadeLoop();
     }
 
-    // INICIAR
+    // INICIAR O JOGO
     arcadeLoop();
 </script>
 
