@@ -6,114 +6,269 @@
     <title>A Jornada do Nosso Amor ❤️</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #ffebee; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+        body { background: #ffebee; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
         
-        .game-container { background: white; width: 100%; max-width: 600px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; border: 4px solid #ff4081; }
+        .game-wrapper { background: white; width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; border: 4px solid #ff4081; text-align: center; }
         
-        .header { background: #ff4081; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .hearts-counter { font-size: 1.1rem; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; }
+        .header { background: #ff4081; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.1rem; }
         
-        .content { padding: 25px; text-align: center; }
+        /* FASE 1: CANVAS DO JOGUINHO */
+        #gameCanvas { background: #fff5f8; display: block; margin: 0 auto; width: 100%; max-width: 500px; height: 350px; }
+        .controls { display: flex; justify-content: space-between; padding: 10px 20px; background: #fff; border-top: 2px solid #ffe0b2; }
+        .control-btn { background: #ff4081; color: white; border: none; padding: 15px 35px; border-radius: 12px; font-size: 1.5rem; font-weight: bold; user-select: none; }
+        .control-btn:active { background: #d81b60; }
+
+        /* FASE 2: HISTÓRIA INTERATIVA */
+        .story-container { display: none; padding: 25px; text-align: center; }
         .scene-title { color: #d81b60; margin-bottom: 15px; font-size: 1.4rem; }
         .story-text { font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; color: #555; }
-        
         .options-container { display: flex; flex-direction: column; gap: 12px; }
         .option-btn { background: #fff0f5; border: 2px solid #ff80ab; padding: 14px 20px; border-radius: 12px; font-size: 0.98rem; color: #c2185b; cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-align: center; }
         .option-btn:hover { background: #ff4081; color: white; transform: translateY(-2px); }
-        
-        /* Galeria Final de Fotos */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        .photo-card { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); border: 1px solid #ffe0b2; transform: rotate(-2deg); }
+
+        /* FASE 3: ÁLBUM FINAL DE FOTOS */
+        .final-screen { display: none; padding: 20px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; }
+        .photo-card { background: white; padding: 8px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: 1px solid #ffe0b2; transform: rotate(-2deg); }
         .photo-card:nth-child(even) { transform: rotate(2deg); }
-        .photo-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; }
-        .photo-card p { font-size: 0.85rem; color: #d81b60; margin-top: 8px; font-weight: 600; line-height: 1.3; }
-        
-        .restart-btn { margin-top: 25px; background: #ff4081; color: white; border: none; padding: 12px 24px; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.2s; }
-        .restart-btn:hover { background: #d81b60; }
+        .photo-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; }
+        .photo-card p { font-size: 0.8rem; color: #d81b60; margin-top: 5px; font-weight: 600; }
+
+        .restart-btn { margin-top: 20px; background: #ff4081; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="game-container">
+<div class="game-wrapper">
     <div class="header">
-        <span>❤️ Nossa História</span>
-        <div class="hearts-counter">Corações: <span id="hearts-count">0</span> / 100</div>
+        <span id="game-subtitle">❤️ Pegue o Amor Dela!</span>
+        <span>Corações: <span id="score">0</span></span>
     </div>
 
-    <div class="content" id="game-content">
-        <!-- O conteúdo é inserido via JavaScript -->
+    <!-- FASE 1: MINI-GAME DE PEGAR CORAÇÕES -->
+    <div id="arcade-phase">
+        <canvas id="gameCanvas" width="400" height="350"></canvas>
+        <div class="controls" id="mobileControls">
+            <button class="control-btn" id="btnLeft">⬅️</button>
+            <button class="control-btn" id="btnRight">➡️</button>
+        </div>
+    </div>
+
+    <!-- FASE 2: HISTÓRIA E DIÁLOGOS -->
+    <div class="story-container" id="story-phase"></div>
+
+    <!-- FASE 3: GALERIA DE FOTOS -->
+    <div class="final-screen" id="finalScreen">
+        <h2 class="scene-title">🎉 Parabéns, Meu Amor! 🎉</h2>
+        <p class="story-text">Você superou todos os desafios e conquistou meu coração por completo!</p>
+
+        <div class="gallery-grid" id="galleryGrid"></div>
+
+        <p style="margin-top: 20px; font-size: 1.1rem; font-weight: bold; color: #d81b60;">Eu te amo demais! ❤️</p>
+        <button class="restart-btn" onclick="resetGame()">Jogar Novamente 🔄</button>
     </div>
 </div>
 
 <script>
-    // 1. DADOS DAS FASES DO JOGO
+    // ELEMENTOS
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const gameSubtitle = document.getElementById('game-subtitle');
+    const arcadePhase = document.getElementById('arcade-phase');
+    const storyPhase = document.getElementById('story-phase');
+    const finalScreen = document.getElementById('finalScreen');
+
+    // IMAGENS DOS ROSTOS SEPARADOS
+    const playerImg = new Image();
+    playerImg.src = './VOCE.JPG'; // Seu rosto (A Cesta)
+
+    const spawnerImg = new Image();
+    spawnerImg.src = './ELA.JPG'; // O rosto dela (Lançadora no topo)
+
+    // ESTADO DO JOGO
+    let score = 0;
+    const arcadeTargetScore = 50;
+    let arcadeRunning = true;
+
+    // FOTOS DO ÁLBUM FINAL
+    const photos = [
+        { url: "./FOTO1.JPEG", caption: "O começo de tudo!" },
+        { url: "./FOTO2.JPEG", caption: "Aquele sorriso" },
+        { url: "./FOTO3.JPEG", caption: "O nosso primeiro jantar" },
+        { url: "./FOTO4.JPEG", caption: "Nossas férias" },
+        { url: "./FOTO5.JPEG", caption: "Pedindo mais dias assim" },
+        { url: "./FOTO6.JPEG", caption: "O show da nossa história" }
+    ];
+
+    // FASES DA HISTÓRIA
     const scenes = [
         {
             title: "Capítulo 1: Oi, Como foi seu Dia?",
             text: "Lembra de quando nos vimos pela primeira vez? Eu estava super nervoso tentando pensar no que dizer...",
             options: [
-                { text: "Dizer um 'Oi' envergonhado e dar um sorriso", hearts: 35 },
-                { text: "E você quebrou aquele gelo, me falando você prometeu uma coisa.", hearts: 25 },
-                { text: "Eu todo tímido, vendo a Valéria no carro, eu fiz o que prometi.", hearts: 15 }
+                { text: "Dizer um 'Oi' envergonhado e dar um sorriso", hearts: 20 },
+                { text: "E você quebrou aquele gelo, me falando você prometeu uma coisa.", hearts: 20 },
+                { text: "Eu todo tímido, vendo a Valéria no carro, eu fiz o que prometi.", hearts: 20 }
             ]
         },
         {
             title: "Capítulo 2: O Momento Marcante",
             text: "Conforme o tempo foi passando, fomos criando memórias incríveis juntos. Qual é o ingrediente principal do nosso amor?",
             options: [
-                { text: "Nossos risos e brincadeiras diárias", hearts: 35 },
-                { text: "O carinho e a parceria em todos os momentos", hearts: 35 },
-                { text: "Tudo isso junto e mais um pouco!", hearts: 40 }
+                { text: "Nossos risos e brincadeiras diárias", hearts: 20 },
+                { text: "O carinho e a parceria em todos os momentos", hearts: 20 },
+                { text: "Tudo isso junto e mais um pouco!", hearts: 25 }
             ]
         },
         {
             title: "Capítulo 3: O Pedido de Amor",
             text: "Hoje, depois de tudo o que vivemos, eu tenho apenas uma certeza absoluta...",
             options: [
-                { text: "Que eu quero continuar conquistando você todos os dias! ❤️", hearts: 30 },
-                { text: "Que você é a pessoa mais especial da minha vida! 💕", hearts: 30 }
+                { text: "Que eu quero continuar te conquistando todos os dias! ❤️", hearts: 25 },
+                { text: "Que você é a pessoa mais especial da minha vida! 💕", hearts: 25 }
             ]
         }
     ];
 
-    // 2. FOTOS DO FINAL DO JOGO
-    const photos = [
-        { url: "./FOTO1.JPEG", caption: "O começo de tudo!" },
-        { url: "./FOTO2.JPEG", caption: "Aquele sorriso" },
-        { url: "./FOTO3.JPEG", caption: "O nosso primeiro jantar" },
-        { url: "./FOTO4.JPEG", caption: "Nossas férias" },
-        { url: "./FOTO5.JPEG", caption: "Pedindo a Deus para vir mais dias como esse" },
-        { url: "./FOTO6.JPEG", caption: "O show que marcou a nossa história" }
-    ];
-
-    // ESTADO DO JOGO
     let currentScene = 0;
-    let totalHearts = 0;
 
-    // CARREGAR A FASE ATUAL
+    // PERSONAGENS
+    const player = { x: canvas.width / 2 - 30, y: canvas.height - 70, size: 60, speed: 6, dx: 0 };
+    const spawner = { x: canvas.width / 2 - 25, y: 10, size: 50, speed: 2.5, direction: 1 };
+
+    let hearts = [];
+
+    function spawnHeart() {
+        if (!arcadeRunning) return;
+        hearts.push({ x: spawner.x + spawner.size / 2 - 10, y: spawner.y + spawner.size, size: 22, speed: 2 + Math.random() * 3 });
+    }
+    let heartInterval = setInterval(spawnHeart, 700);
+
+    function updateArcade() {
+        if (!arcadeRunning) return;
+
+        player.x += player.dx;
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
+
+        spawner.x += spawner.speed * spawner.direction;
+        if (spawner.x <= 0 || spawner.x + spawner.size >= canvas.width) {
+            spawner.direction *= -1;
+        }
+
+        for (let i = 0; i < hearts.length; i++) {
+            let h = hearts[i];
+            h.y += h.speed;
+
+            if (
+                h.y + h.size >= player.y &&
+                h.x + h.size >= player.x &&
+                h.x <= player.x + player.size
+            ) {
+                score += 10;
+                scoreElement.innerText = score;
+                hearts.splice(i, 1);
+                i--;
+
+                if (score >= arcadeTargetScore) {
+                    startStoryPhase();
+                }
+            } else if (h.y > canvas.height) {
+                hearts.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    function drawCircularImage(img, x, y, size, borderColor) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        try {
+            ctx.drawImage(img, x, y, size, size);
+        } catch (e) {
+            ctx.fillStyle = '#ff4081';
+            ctx.fill();
+        }
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = borderColor;
+        ctx.stroke();
+    }
+
+    function drawArcade() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Ela no topo
+        drawCircularImage(spawnerImg, spawner.x, spawner.y, spawner.size, '#e91e63');
+
+        // Você embaixo
+        drawCircularImage(playerImg, player.x, player.y, player.size, '#ff4081');
+
+        // Corações
+        hearts.forEach(h => {
+            ctx.fillStyle = '#e91e63';
+            ctx.font = `${h.size}px sans-serif`;
+            ctx.fillText('❤️', h.x, h.y);
+        });
+    }
+
+    function arcadeLoop() {
+        updateArcade();
+        drawArcade();
+        if (arcadeRunning) requestAnimationFrame(arcadeLoop);
+    }
+
+    // CONTROLES
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a') player.dx = -player.speed;
+        if (e.key === 'ArrowRight' || e.key === 'd') player.dx = player.speed;
+    });
+    document.addEventListener('keyup', (e) => {
+        if (['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) player.dx = 0;
+    });
+
+    const btnLeft = document.getElementById('btnLeft');
+    const btnRight = document.getElementById('btnRight');
+    btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); player.dx = -player.speed; });
+    btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); player.dx = 0; });
+    btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); player.dx = player.speed; });
+    btnRight.addEventListener('touchend', (e) => { e.preventDefault(); player.dx = 0; });
+
+    // TRANSITION: FASE 2
+    function startStoryPhase() {
+        arcadeRunning = false;
+        clearInterval(heartInterval);
+        arcadePhase.style.display = 'none';
+        storyPhase.style.display = 'block';
+        gameSubtitle.innerText = '❤️ Fase 2: Nossa História';
+        loadScene();
+    }
+
     function loadScene() {
-        const contentDiv = document.getElementById("game-content");
         const scene = scenes[currentScene];
-
         let optionsHTML = "";
         scene.options.forEach((opt) => {
             optionsHTML += `<button class="option-btn" onclick="selectOption(${opt.hearts})">${opt.text}</button>`;
         });
 
-        contentDiv.innerHTML = `
+        storyPhase.innerHTML = `
             <h2 class="scene-title">${scene.title}</h2>
             <p class="story-text">${scene.text}</p>
-            <div class="options-container">
-                ${optionsHTML}
-            </div>
+            <div class="options-container">${optionsHTML}</div>
         `;
     }
 
-    // PROCESSAR A ESCOLHA DO JOGADOR
     function selectOption(heartsGained) {
-        totalHearts += heartsGained;
-        document.getElementById("hearts-count").innerText = totalHearts;
-
+        score += heartsGained;
+        scoreElement.innerText = score;
         currentScene++;
 
         if (currentScene < scenes.length) {
@@ -123,43 +278,42 @@
         }
     }
 
-    // TELA FINAL COM AS FOTOS
+    // TRANSITION: FASE 3
     function showFinalScreen() {
-        const contentDiv = document.getElementById("game-content");
+        storyPhase.style.display = 'none';
+        finalScreen.style.display = 'block';
+        gameSubtitle.innerText = '❤️ Nosso Álbum de Memórias';
 
-        let photosHTML = "";
+        const galleryGrid = document.getElementById('galleryGrid');
+        galleryGrid.innerHTML = '';
         photos.forEach(photo => {
-            photosHTML += `
+            galleryGrid.innerHTML += `
                 <div class="photo-card">
-                    <img src="${photo.url}" alt="${photo.caption}" onerror="this.src='https://via.placeholder.com/300x300/ff80ab/ffffff?text=Nossa+Foto'">
+                    <img src="${photo.url}" alt="${photo.caption}" onerror="this.src='https://via.placeholder.com/200?text=Foto'">
                     <p>${photo.caption}</p>
                 </div>
             `;
         });
-
-        contentDiv.innerHTML = `
-            <h2 class="scene-title">🎉 Parabéns, Meu Amor! 🎉</h2>
-            <p class="story-text">Você coletou <b>${totalHearts} Corações</b> e desbloqueou nosso álbum especial de memórias!</p>
-            
-            <div class="gallery-grid">
-                ${photosHTML}
-            </div>
-
-            <p style="margin-top: 25px; font-weight: bold; color: #d81b60; font-size: 1.1rem;">Eu te amo muito! ❤️</p>
-            <button class="restart-btn" onclick="restartGame()">Jogar Novamente 🔄</button>
-        `;
     }
 
-    // REINICIAR JOGO
-    function restartGame() {
+    function resetGame() {
+        score = 0;
         currentScene = 0;
-        totalHearts = 0;
-        document.getElementById("hearts-count").innerText = totalHearts;
-        loadScene();
+        scoreElement.innerText = score;
+        hearts = [];
+        arcadeRunning = true;
+        
+        finalScreen.style.display = 'none';
+        storyPhase.style.display = 'none';
+        arcadePhase.style.display = 'block';
+        gameSubtitle.innerText = '❤️ Pegue o Amor Dela!';
+
+        heartInterval = setInterval(spawnHeart, 700);
+        arcadeLoop();
     }
 
-    // Iniciar o jogo na primeira fase
-    loadScene();
+    // INICIAR
+    arcadeLoop();
 </script>
 
 </body>
