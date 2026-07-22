@@ -6,29 +6,30 @@
     <title>A Jornada do Nosso Amor ❤️</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #ffebee; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        body { background: #ffebee; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
         
         .game-container { background: white; width: 100%; max-width: 600px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; border: 4px solid #ff4081; }
         
         .header { background: #ff4081; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .hearts-counter { font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; }
+        .hearts-counter { font-size: 1.1rem; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; }
         
         .content { padding: 25px; text-align: center; }
-        .scene-title { color: #d81b60; margin-bottom: 15px; font-size: 1.5rem; }
-        .story-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; color: #555; }
+        .scene-title { color: #d81b60; margin-bottom: 15px; font-size: 1.4rem; }
+        .story-text { font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; color: #555; }
         
         .options-container { display: flex; flex-direction: column; gap: 12px; }
-        .option-btn { background: #fff0f5; border: 2px solid #ff80ab; padding: 12px 20px; border-radius: 12px; font-size: 1rem; color: #c2185b; cursor: pointer; transition: all 0.2s ease; font-weight: 600; }
+        .option-btn { background: #fff0f5; border: 2px solid #ff80ab; padding: 14px 20px; border-radius: 12px; font-size: 0.98rem; color: #c2185b; cursor: pointer; transition: all 0.2s ease; font-weight: 600; text-align: center; }
         .option-btn:hover { background: #ff4081; color: white; transform: translateY(-2px); }
         
         /* Galeria Final de Fotos */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
-        .photo-card { background: white; padding: 8px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transform: rotate(-2deg); }
+        .photo-card { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.12); border: 1px solid #ffe0b2; transform: rotate(-2deg); }
         .photo-card:nth-child(even) { transform: rotate(2deg); }
         .photo-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; }
-        .photo-card p { font-size: 0.8rem; color: #666; margin-top: 5px; font-style: italic; }
+        .photo-card p { font-size: 0.85rem; color: #d81b60; margin-top: 8px; font-weight: 600; line-height: 1.3; }
         
-        .restart-btn { margin-top: 25px; background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+        .restart-btn { margin-top: 25px; background: #ff4081; color: white; border: none; padding: 12px 24px; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.2s; }
+        .restart-btn:hover { background: #d81b60; }
     </style>
 </head>
 <body>
@@ -40,13 +41,12 @@
     </div>
 
     <div class="content" id="game-content">
-        <!-- O conteúdo será alterado dinamicamente via JavaScript -->
+        <!-- O conteúdo é inserido via JavaScript -->
     </div>
 </div>
 
 <script>
     // 1. DADOS DAS FASES DO JOGO
-    // Você pode editar as perguntas, as opções e a quantidade de corações ganha em cada resposta!
     const scenes = [
         {
             title: "Capítulo 1: Oi, Como foi seu Dia?",
@@ -54,7 +54,7 @@
             options: [
                 { text: "Dizer um 'Oi' envergonhado e dar um sorriso", hearts: 35 },
                 { text: "E você quebrou aquele gelo, me falando você prometeu uma coisa.", hearts: 25 },
-                { text: "Eu todo timido, Vendo a Valeria no carro, eu fiz o que prometi.", hearts: 15 }
+                { text: "Eu todo tímido, vendo a Valéria no carro, eu fiz o que prometi.", hearts: 15 }
             ]
         },
         {
@@ -77,27 +77,26 @@
     ];
 
     // 2. FOTOS DO FINAL DO JOGO
-    // Substitua os links abaixo pelas fotos de vocês (podem ser links da web ou arquivos locais como "foto1.jpg")
     const photos = [
-       { url: "FOTO1.JPEG", caption: "O começo de tudo!" },
+        { url: "FOTO1.JPEG", caption: "O começo de tudo!" },
         { url: "FOTO2.JPEG", caption: "Aquele sorriso" },
         { url: "FOTO3.JPEG", caption: "O nosso primeiro jantar" },
         { url: "FOTO4.JPEG", caption: "Nossas férias" },
-        { url: "FOTO5.JPEG", caption: "Pedindo a Deus para vim mais dias como esse" },
-        { url: "FOTO6.JPEG", caption: "O show que marcou a nossa história" }}
+        { url: "FOTO5.JPEG", caption: "Pedindo a Deus para vir mais dias como esse" },
+        { url: "FOTO6.JPEG", caption: "O show que marcou a nossa história" }
     ];
 
     // ESTADO DO JOGO
     let currentScene = 0;
     let totalHearts = 0;
 
-    // INICIALIZAR O JOGO
+    // CARREGAR A FASE ATUAL
     function loadScene() {
         const contentDiv = document.getElementById("game-content");
         const scene = scenes[currentScene];
 
         let optionsHTML = "";
-        scene.options.forEach((opt, index) => {
+        scene.options.forEach((opt) => {
             optionsHTML += `<button class="option-btn" onclick="selectOption(${opt.hearts})">${opt.text}</button>`;
         });
 
@@ -132,7 +131,7 @@
         photos.forEach(photo => {
             photosHTML += `
                 <div class="photo-card">
-                    <img src="${photo.url}" alt="Nossa Foto">
+                    <img src="${photo.url}" alt="${photo.caption}" onerror="this.src='https://via.placeholder.com/300x300/ff80ab/ffffff?text=Nossa+Foto'">
                     <p>${photo.caption}</p>
                 </div>
             `;
@@ -146,7 +145,7 @@
                 ${photosHTML}
             </div>
 
-            <p style="margin-top: 25px; font-weight: bold; color: #d81b60;">Eu te amo muito!</p>
+            <p style="margin-top: 25px; font-weight: bold; color: #d81b60; font-size: 1.1rem;">Eu te amo muito! ❤️</p>
             <button class="restart-btn" onclick="restartGame()">Jogar Novamente 🔄</button>
         `;
     }
@@ -159,7 +158,7 @@
         loadScene();
     }
 
-    // Iniciar na primeira fase
+    // Iniciar o jogo na primeira fase
     loadScene();
 </script>
 
